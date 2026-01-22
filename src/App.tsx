@@ -21,10 +21,26 @@ function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>(getTheme());
 
   useEffect(() => {
+    // Проверяем доступность localStorage
+    if (typeof window === 'undefined' || !window.localStorage) {
+      console.warn('localStorage is not available');
+      return;
+    }
+
     try {
-      setDebts(getDebts());
-      setExpenses(getExpenses());
-      setIncome(getIncome());
+      const loadedDebts = getDebts();
+      const loadedExpenses = getExpenses();
+      const loadedIncome = getIncome();
+      
+      console.log('Loaded data:', { 
+        debts: loadedDebts.length, 
+        expenses: loadedExpenses.length, 
+        income: loadedIncome.length 
+      });
+      
+      setDebts(loadedDebts);
+      setExpenses(loadedExpenses);
+      setIncome(loadedIncome);
     } catch (error) {
       console.error('Error loading data:', error);
       setDebts([]);
@@ -51,17 +67,12 @@ function App() {
         return;
       }
       addDebt({ name: name.trim(), amount: Number(amount), isOwed: Boolean(isOwed) });
-      // Обновляем состояние с небольшой задержкой для гарантии сохранения
-      setTimeout(() => {
-        try {
-          const updatedDebts = getDebts();
-          if (Array.isArray(updatedDebts)) {
-            setDebts(updatedDebts);
-          }
-        } catch (e) {
-          console.error('Error updating debts state:', e);
-        }
-      }, 100);
+      // Обновляем состояние сразу после добавления
+      const updatedDebts = getDebts();
+      console.log('Updated debts after add:', updatedDebts.length);
+      if (Array.isArray(updatedDebts)) {
+        setDebts(updatedDebts);
+      }
     } catch (error) {
       console.error('Error adding debt:', error);
       showAlert('Произошла ошибка при добавлении долга. Попробуйте еще раз.');
@@ -137,13 +148,27 @@ function App() {
   };
 
   const handleAddExpense = (name: string, amount: number, category?: string) => {
-    addExpense({ name, amount, category });
-    setExpenses(getExpenses());
+    try {
+      addExpense({ name, amount, category });
+      const updatedExpenses = getExpenses();
+      console.log('Updated expenses after add:', updatedExpenses.length);
+      setExpenses(updatedExpenses);
+    } catch (error) {
+      console.error('Error adding expense:', error);
+      showAlert('Произошла ошибка при добавлении расхода.');
+    }
   };
 
   const handleAddIncome = (name: string, amount: number, category?: string) => {
-    addIncome({ name, amount, category });
-    setIncome(getIncome());
+    try {
+      addIncome({ name, amount, category });
+      const updatedIncome = getIncome();
+      console.log('Updated income after add:', updatedIncome.length);
+      setIncome(updatedIncome);
+    } catch (error) {
+      console.error('Error adding income:', error);
+      showAlert('Произошла ошибка при добавлении дохода.');
+    }
   };
 
   const handleDeleteExpense = (id: string) => {

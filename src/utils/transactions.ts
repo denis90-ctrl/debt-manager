@@ -4,13 +4,31 @@ const EXPENSES_KEY = 'expenses';
 const INCOME_KEY = 'income';
 
 export const getExpenses = (): Transaction[] => {
-  const stored = localStorage.getItem(EXPENSES_KEY);
-  return stored ? JSON.parse(stored) : [];
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      console.warn('localStorage is not available');
+      return [];
+    }
+    const stored = localStorage.getItem(EXPENSES_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error('Error getting expenses:', error);
+    return [];
+  }
 };
 
 export const getIncome = (): Transaction[] => {
-  const stored = localStorage.getItem(INCOME_KEY);
-  return stored ? JSON.parse(stored) : [];
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      console.warn('localStorage is not available');
+      return [];
+    }
+    const stored = localStorage.getItem(INCOME_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error('Error getting income:', error);
+    return [];
+  }
 };
 
 export const addExpense = (expense: Omit<Transaction, 'id' | 'createdAt'>): Transaction => {

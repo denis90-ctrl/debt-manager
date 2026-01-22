@@ -4,6 +4,11 @@ const STORAGE_KEY = 'debts';
 
 export const getDebts = (): Debt[] => {
   try {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      console.warn('localStorage is not available');
+      return [];
+    }
+    
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return [];
     
@@ -35,11 +40,24 @@ export const getDebts = (): Debt[] => {
 };
 
 export const saveDebts = (debts: Debt[]): void => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(debts));
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      console.warn('localStorage is not available');
+      return;
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(debts));
+  } catch (error) {
+    console.error('Error saving debts:', error);
+  }
 };
 
 export const addDebt = (debt: Omit<Debt, 'id' | 'createdAt' | 'initialAmount'>): Debt => {
   try {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      console.warn('localStorage is not available');
+      throw new Error('localStorage is not available');
+    }
+    
     const stored = localStorage.getItem(STORAGE_KEY);
     let debts: Debt[] = [];
     
