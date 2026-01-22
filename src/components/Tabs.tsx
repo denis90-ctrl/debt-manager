@@ -1,4 +1,3 @@
-
 export type TabType = 'debts' | 'expenses' | 'income';
 
 interface TabsProps {
