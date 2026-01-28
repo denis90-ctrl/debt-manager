@@ -6,11 +6,20 @@ interface TelegramWebApp {
   showAlert(message: string): void;
   showConfirm(message: string, callback: (confirmed: boolean) => void): void;
   sendData(data: string): void;
+  ready(): void;
+  setHeaderColor(color: string): void;
+  setBackgroundColor(color: string): void;
+  HapticFeedback?: {
+    impactOccurred(style: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft'): void;
+    notificationOccurred(type: 'error' | 'success' | 'warning'): void;
+    selectionChanged(): void;
+  };
   MainButton: {
     setText(text: string): void;
     onClick(callback: () => void): void;
     show(): void;
     hide(): void;
+    setParams(params: { is_visible?: boolean; is_active?: boolean; text?: string; color?: string; text_color?: string }): void;
   };
   BackButton: {
     onClick(callback: () => void): void;
@@ -25,9 +34,13 @@ interface TelegramWebApp {
       last_name?: string;
       username?: string;
       language_code?: string;
+      is_premium?: boolean;
     };
   };
   onEvent(eventType: string, eventHandler: () => void): void;
+  isExpanded?: boolean;
+  viewportHeight?: number;
+  viewportStableHeight?: number;
 }
 
 interface TelegramWindow {
@@ -223,6 +236,100 @@ export const sendData = (data: string) => {
   const webApp = getWebApp();
   if (webApp) {
     webApp.sendData(data);
+  }
+};
+
+/**
+ * Haptic feedback - вибрация для обратной связи
+ */
+export const triggerHaptic = (type: 'light' | 'medium' | 'heavy' | 'error' | 'success' | 'warning' | 'selection') => {
+  try {
+    const webApp = getWebApp();
+    if (!webApp?.HapticFeedback) return;
+
+    if (type === 'error' || type === 'success' || type === 'warning') {
+      webApp.HapticFeedback.notificationOccurred(type);
+    } else if (type === 'selection') {
+      webApp.HapticFeedback.selectionChanged();
+    } else {
+      webApp.HapticFeedback.impactOccurred(type);
+    }
+  } catch (error) {
+    console.debug('Haptic feedback failed:', error);
+  }
+};
+
+/**
+ * Инициализировать Telegram WebApp правильно
+ */
+export const initializeTelegramApp = () => {
+  try {
+    const webApp = getWebApp();
+    if (!webApp) return;
+
+    // Сообщить Telegram, что приложение готово
+    if (typeof webApp.ready === 'function') {
+      webApp.ready();
+    }
+
+    // Расширить приложение на весь экран
+    expandApp();
+
+    // Установить цвета в соответствии с темой
+    const isDark = webApp.colorScheme === 'dark';
+    if (typeof webApp.setHeaderColor === 'function') {
+      webApp.setHeaderColor(isDark ? '#1f2937' : '#ffffff');
+    }
+    if (typeof webApp.setBackgroundColor === 'function') {
+      webApp.setBackgroundColor(isDark ? '#0f172a' : '#f8fafc');
+    }
+  } catch (error) {
+    console.debug('Telegram app initialization failed:', error);
+  }
+};
+
+/**
+ * Получить информацию о пользователе Telegram
+ */
+export const getTelegramUser = () => {
+  try {
+    const webApp = getWebApp();
+    const user = webApp?.initDataUnsafe?.user;
+    if (user) {
+      return {
+        id: user.id,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        username: user.username,
+        languageCode: user.language_code,
+        isPremium: user.is_premium || false,
+      };
+    }
+    return null;
+  } catch (error) {
+    console.debug('Failed to get Telegram user:', error);
+    return null;
+  }
+};
+
+/**
+ * Получить размеры viewport
+ */
+export const getViewportInfo = () => {
+  try {
+    const webApp = getWebApp();
+    return {
+      isExpanded: webApp?.isExpanded || false,
+      height: webApp?.viewportHeight || window.innerHeight,
+      stableHeight: webApp?.viewportStableHeight || window.innerHeight,
+    };
+  } catch (error) {
+    console.debug('Failed to get viewport info:', error);
+    return {
+      isExpanded: false,
+      height: window.innerHeight,
+      stableHeight: window.innerHeight,
+    };
   }
 };
 

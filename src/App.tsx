@@ -8,7 +8,7 @@ import { TransactionList } from './components/TransactionList';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { getDebts, addDebt, reduceDebtAmount, increaseDebtAmount, closeDebt, clearAllDebts, clearClosedDebtsAndResetProgress } from './utils/storage';
 import { getExpenses, getIncome, addExpense, addIncome, deleteExpense, deleteIncome, clearAllExpenses, clearAllIncome } from './utils/transactions';
-import { getTheme, onThemeChange, showAlert, showConfirm, isTelegramWebApp } from './utils/telegram';
+import { getTheme, onThemeChange, showAlert, showConfirm, isTelegramWebApp, triggerHaptic } from './utils/telegram';
 import { Debt } from './types/debt';
 import { Transaction } from './types/transaction';
 import './App.css';
@@ -72,10 +72,12 @@ function App() {
       console.log('Updated debts after add:', updatedDebts.length);
       if (Array.isArray(updatedDebts)) {
         setDebts(updatedDebts);
+        triggerHaptic('success'); // Вибрация при успешном добавлении
       }
     } catch (error) {
       console.error('Error adding debt:', error);
       showAlert('Произошла ошибка при добавлении долга. Попробуйте еще раз.');
+      triggerHaptic('error');
     }
   };
 
@@ -83,6 +85,7 @@ function App() {
     try {
       reduceDebtAmount(id, amount);
       setDebts(getDebts());
+      triggerHaptic('light');
     } catch (error) {
       console.error('Error reducing debt:', error);
       showAlert('Произошла ошибка. Попробуйте еще раз.');
@@ -93,6 +96,7 @@ function App() {
     try {
       increaseDebtAmount(id, amount);
       setDebts(getDebts());
+      triggerHaptic('light');
     } catch (error) {
       console.error('Error increasing debt:', error);
       showAlert('Произошла ошибка. Попробуйте еще раз.');
@@ -103,6 +107,7 @@ function App() {
     try {
       closeDebt(id);
       setDebts(getDebts());
+      triggerHaptic('medium');
     } catch (error) {
       console.error('Error closing debt:', error);
       showAlert('Произошла ошибка. Попробуйте еще раз.');
