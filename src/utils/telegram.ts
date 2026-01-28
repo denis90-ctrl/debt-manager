@@ -185,12 +185,17 @@ export const onThemeChange = (callback: (theme: 'light' | 'dark') => void) => {
 };
 
 /**
- * Включить закрытие при свайпе вниз
+ * Включить закрытие при свайпе вниз (с проверкой версии)
  */
 export const enableClosingConfirmation = () => {
-  const webApp = getWebApp();
-  if (webApp) {
-    webApp.enableClosingConfirmation();
+  try {
+    const webApp = getWebApp();
+    if (webApp && typeof webApp.enableClosingConfirmation === 'function') {
+      webApp.enableClosingConfirmation();
+    }
+  } catch (error) {
+    // Метод может не быть поддержан в некоторых версиях Telegram
+    console.debug('enableClosingConfirmation is not supported or failed:', error);
   }
 };
 
