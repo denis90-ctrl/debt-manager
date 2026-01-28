@@ -5,10 +5,16 @@ import { initTelegramWebApp, expandApp, enableClosingConfirmation } from './util
 
 // Инициализация Telegram WebApp
 if (initTelegramWebApp()) {
-  // Расширяем приложение на весь экран
-  expandApp();
-  // Включаем подтверждение при закрытии
-  enableClosingConfirmation();
+  try {
+    // Расширяем приложение на весь экран
+    expandApp();
+    // Включаем подтверждение при закрытии (с задержкой, так как SDK может быть еще не полностью инициализирован)
+    setTimeout(() => {
+      enableClosingConfirmation();
+    }, 100);
+  } catch (error) {
+    console.debug('Error during Telegram initialization:', error);
+  }
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

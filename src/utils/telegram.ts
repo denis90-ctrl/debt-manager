@@ -69,9 +69,13 @@ export const isTelegramWebApp = (): boolean => {
  * Расширить приложение на весь экран
  */
 export const expandApp = () => {
-  const webApp = getWebApp();
-  if (webApp) {
-    webApp.expand();
+  try {
+    const webApp = getWebApp();
+    if (webApp && typeof webApp.expand === 'function') {
+      webApp.expand();
+    }
+  } catch (error) {
+    console.debug('expandApp failed:', error);
   }
 };
 
@@ -132,10 +136,15 @@ export const hideBackButton = () => {
  * Показать всплывающее окно
  */
 export const showAlert = (message: string) => {
-  const webApp = getWebApp();
-  if (webApp) {
-    webApp.showAlert(message);
-  } else {
+  try {
+    const webApp = getWebApp();
+    if (webApp && typeof webApp.showAlert === 'function') {
+      webApp.showAlert(message);
+    } else {
+      alert(message);
+    }
+  } catch (error) {
+    console.debug('showAlert failed:', error);
     alert(message);
   }
 };
@@ -176,11 +185,19 @@ export const getTheme = (): 'light' | 'dark' => {
  * Установить обработчик изменения темы
  */
 export const onThemeChange = (callback: (theme: 'light' | 'dark') => void) => {
-  const webApp = getWebApp();
-  if (webApp) {
-    webApp.onEvent('themeChanged', () => {
-      callback(getTheme());
-    });
+  try {
+    const webApp = getWebApp();
+    if (webApp && typeof webApp.onEvent === 'function') {
+      webApp.onEvent('themeChanged', () => {
+        try {
+          callback(getTheme());
+        } catch (error) {
+          console.debug('Theme change callback failed:', error);
+        }
+      });
+    }
+  } catch (error) {
+    console.debug('onThemeChange failed:', error);
   }
 };
 
