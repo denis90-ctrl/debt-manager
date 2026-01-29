@@ -11,8 +11,11 @@
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     @apply min-h-screen;
     padding: max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+    width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
   }
-}
+} 
 
 @layer components {
   .btn {
@@ -47,8 +50,10 @@
 
 /* Responsive и специальные стили */
 .app {
-  @apply max-w-6xl mx-auto h-screen flex flex-col overflow-auto;
-}
+  @apply max-w-6xl mx-auto h-screen flex flex-col overflow-y-auto overflow-x-hidden;
+  width: 100%;
+  box-sizing: border-box;
+} 
 
 .app-header {
   @apply card sticky top-0 z-10 mb-6;
@@ -206,9 +211,9 @@
 
 .app-main {
   display: grid;
-  grid-template-columns: 400px 1fr;
+  grid-template-columns: minmax(0, 400px) 1fr;
   gap: 24px;
-}
+} 
 
 .app-content-right {
   display: grid;
@@ -249,10 +254,10 @@
 
 .progress-circle-container {
   position: relative;
-  width: 320px;
-  height: 320px;
+  width: min(320px, 100%);
+  aspect-ratio: 1 / 1;
   margin: 0 auto 40px;
-}
+} 
 
 .progress-circle {
   width: 100%;
@@ -476,13 +481,17 @@
   font-weight: 600;
   color: #333;
   margin-bottom: 8px;
-}
+  word-break: break-word;
+  overflow-wrap: anywhere;
+} 
 
 .debt-amount {
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 4px;
-}
+  word-break: break-word;
+  overflow-wrap: anywhere;
+} 
 
 .debt-amount.owed {
   color: #dc2626;
@@ -638,5 +647,79 @@
   font-size: 20px;
   font-weight: 700;
   color: #333;
+}
+
+/* Prevent wide images/svg from causing horizontal scroll */
+img, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+
+/* Mobile-specific fixes for Telegram Mini App (buttons sizing / wrapping) */
+@media (max-width: 480px) {
+  .header-top {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .header-buttons {
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .btn-clear,
+  .btn-clear-secondary {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 14px;
+    box-sizing: border-box;
+    white-space: normal;
+  }
+
+  .tabs {
+    overflow-x: auto;
+  }
+
+  .debt-actions {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .amount-control {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .amount-input-group {
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .amount-input {
+    width: 100%;
+  }
+
+  .action-toggle {
+    width: 100%;
+  }
+
+  .toggle-btn {
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  .btn-action,
+  .btn-reduce,
+  .btn-increase,
+  .btn-close {
+    width: 100%;
+    padding: 10px;
+    white-space: normal;
+  }
 }
 

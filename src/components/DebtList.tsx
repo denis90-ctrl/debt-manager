@@ -1,4 +1,7 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { FixedSizeList as List } from 'react-window';
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
 import { Debt } from '../types/debt';
 
 interface DebtListProps {
@@ -23,7 +26,16 @@ const formatAmount = (amount: number) => {
 };
 
 const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('ru-RU');
+  try {
+    const d = new Date(dateString);
+    const now = new Date();
+    const diffHours = (now.getTime() - d.getTime()) / (1000 * 60 * 60);
+    if (diffHours < 24) return format(d, 'HH:mm', { locale: ru });
+    if (diffHours < 168) return format(d, 'EEEE', { locale: ru });
+    return format(d, 'dd.MM.yyyy', { locale: ru });
+  } catch (e) {
+    return dateString;
+  }
 };
 
 const DebtItem = ({ debt, onReduce, onIncrease, onClose }: DebtItemProps) => {
@@ -107,9 +119,18 @@ export const DebtList = ({ debts, onReduce, onIncrease, onClose }: DebtListProps
   if (!Array.isArray(debts)) {
     return <div className="debt-list"><p className="empty">Ошибка загрузки данных</p></div>;
   }
-  
+
   const activeDebts = debts.filter(d => d && !d.closedAt);
   const closedDebts = debts.filter(d => d && d.closedAt);
+
+  const Row = useCallback(({ index, style, data }: any) => {
+    const item: Debt = data[index];
+    return (
+      <div style={style} className="px-2 py-1">
+        <DebtItem debt={item} onReduce={onReduce} onIncrease={onIncrease} onClose={onClose} />
+      </div>
+    );
+  }, [onReduce, onIncrease, onClose]);
 
   return (
     <div className="debt-list">
@@ -118,15 +139,16 @@ export const DebtList = ({ debts, onReduce, onIncrease, onClose }: DebtListProps
         <p className="empty">Нет активных долгов</p>
       ) : (
         <div className="debts-container">
-          {activeDebts.map(debt => (
-            <DebtItem
-              key={debt.id}
-              debt={debt}
-              onReduce={onReduce}
-              onIncrease={onIncrease}
-              onClose={onClose}
-            />
-          ))}
+          <List
+            height={Math.min(600, activeDebts.length * 120)}
+            itemCount={activeDebts.length}
+            itemSize={120}
+            width="100%"
+            itemData={activeDebts}
+            overscanCount={3}
+          >
+            {Row}
+          </List>
         </div>
       )}
 
@@ -134,15 +156,16 @@ export const DebtList = ({ debts, onReduce, onIncrease, onClose }: DebtListProps
         <>
           <h2>Закрытые долги ({closedDebts.length})</h2>
           <div className="debts-container">
-            {closedDebts.map(debt => (
-              <DebtItem
-                key={debt.id}
-                debt={debt}
-                onReduce={onReduce}
-                onIncrease={onIncrease}
-                onClose={onClose}
-              />
-            ))}
+            <List
+              height={Math.min(400, closedDebts.length * 120)}
+              itemCount={closedDebts.length}
+              itemSize={120}
+              width="100%"
+              itemData={closedDebts}
+              overscanCount={2}
+            >
+              {Row}
+            </List>
           </div>
         </>
       )}

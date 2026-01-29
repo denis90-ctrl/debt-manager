@@ -6,16 +6,17 @@ import { Tabs, TabType } from './components/Tabs';
 import { TransactionForm } from './components/TransactionForm';
 import { TransactionList } from './components/TransactionList';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { getDebts, addDebt, reduceDebtAmount, increaseDebtAmount, closeDebt, clearAllDebts, clearClosedDebtsAndResetProgress } from './utils/storage';
+import PerformanceMonitor from './components/PerformanceMonitor';
+import { addDebt, reduceDebtAmount, increaseDebtAmount, closeDebt, clearAllDebts, clearClosedDebtsAndResetProgress } from './utils/storage';
 import { getExpenses, getIncome, addExpense, addIncome, deleteExpense, deleteIncome, clearAllExpenses, clearAllIncome } from './utils/transactions';
 import { getTheme, onThemeChange, showAlert, showConfirm, isTelegramWebApp, triggerHaptic } from './utils/telegram';
-import { Debt } from './types/debt';
 import { Transaction } from './types/transaction';
 import './App.css';
+import useDebts from './hooks/useDebts';
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('debts');
-  const [debts, setDebts] = useState<Debt[]>([]);
+  const { debts, loadDebts } = useDebts();
   const [expenses, setExpenses] = useState<Transaction[]>([]);
   const [income, setIncome] = useState<Transaction[]>([]);
   const [theme, setTheme] = useState<'light' | 'dark'>(getTheme());
@@ -28,22 +29,18 @@ function App() {
     }
 
     try {
-      const loadedDebts = getDebts();
       const loadedExpenses = getExpenses();
       const loadedIncome = getIncome();
-      
+
       console.log('Loaded data:', { 
-        debts: loadedDebts.length, 
         expenses: loadedExpenses.length, 
         income: loadedIncome.length 
       });
-      
-      setDebts(loadedDebts);
+
       setExpenses(loadedExpenses);
       setIncome(loadedIncome);
     } catch (error) {
       console.error('Error loading data:', error);
-      setDebts([]);
       setExpenses([]);
       setIncome([]);
     }
@@ -60,20 +57,16 @@ function App() {
     }
   }, [theme]);
 
-  const handleAdd = (name: string, amount: number, isOwed: boolean) => {
+  const handleAdd = async (name: string, amount: number, isOwed: boolean) => {
     try {
       if (!name || !name.trim() || amount <= 0 || isNaN(amount)) {
         showAlert('Пожалуйста, заполните все поля корректно.');
         return;
       }
       addDebt({ name: name.trim(), amount: Number(amount), isOwed: Boolean(isOwed) });
-      // Обновляем состояние сразу после добавления
-      const updatedDebts = getDebts();
-      console.log('Updated debts after add:', updatedDebts.length);
-      if (Array.isArray(updatedDebts)) {
-        setDebts(updatedDebts);
-        triggerHaptic('success'); // Вибрация при успешном добавлении
-      }
+      await loadDebts(true);
+      console.log('Updated debts after add');
+      triggerHaptic('success'); // Вибрация при успешном добавлении
     } catch (error) {
       console.error('Error adding debt:', error);
       showAlert('Произошла ошибка при добавлении долга. Попробуйте еще раз.');
@@ -81,10 +74,10 @@ function App() {
     }
   };
 
-  const handleReduce = (id: string, amount: number) => {
+  const handleReduce = async (id: string, amount: number) => {
     try {
       reduceDebtAmount(id, amount);
-      setDebts(getDebts());
+      await loadDebts(true);
       triggerHaptic('light');
     } catch (error) {
       console.error('Error reducing debt:', error);
@@ -92,10 +85,10 @@ function App() {
     }
   };
 
-  const handleIncrease = (id: string, amount: number) => {
+  const handleIncrease = async (id: string, amount: number) => {
     try {
       increaseDebtAmount(id, amount);
-      setDebts(getDebts());
+      await loadDebts(true);
       triggerHaptic('light');
     } catch (error) {
       console.error('Error increasing debt:', error);
@@ -103,10 +96,10 @@ function App() {
     }
   };
 
-  const handleClose = (id: string) => {
+  const handleClose = async (id: string) => {
     try {
       closeDebt(id);
-      setDebts(getDebts());
+      await loadDebts(true);
       triggerHaptic('medium');
     } catch (error) {
       console.error('Error closing debt:', error);
@@ -125,7 +118,7 @@ function App() {
     if (confirmed) {
       if (activeTab === 'debts') {
         clearAllDebts();
-        setDebts([]);
+        await loadDebts(true);
       } else if (activeTab === 'expenses') {
         clearAllExpenses();
         setExpenses([]);
@@ -141,10 +134,7 @@ function App() {
     if (confirmed) {
       try {
         clearClosedDebtsAndResetProgress();
-        // Небольшая задержка перед обновлением, чтобы избежать проблем с состоянием
-        setTimeout(() => {
-          setDebts(getDebts());
-        }, 100);
+        await loadDebts(true);
       } catch (error) {
         console.error('Error clearing closed debts:', error);
         showAlert('Произошла ошибка при очистке. Попробуйте обновить страницу.');
@@ -207,10 +197,11 @@ function App() {
 
   return (
     <ErrorBoundary>
+      <PerformanceMonitor>
       <div className={`app ${theme === 'dark' ? 'theme-dark' : 'theme-light'}`}>
         <header className="app-header">
         <div className="header-top">
-          <h1>Управление финансами</h1>
+          <h1>Finance Departament</h1>
           <div className="header-buttons">
             {(() => {
               try {
@@ -289,6 +280,7 @@ function App() {
         </div>
       </main>
       </div>
+      </PerformanceMonitor>
     </ErrorBoundary>
   );
 }
