@@ -37,16 +37,18 @@ function App() {
       console.error('Error loading data:', error);
     }
 
-    // Подписка на изменение темы Telegram
+    // Подписка на изменение темы Telegram (только один раз)
     if (isTelegramWebApp()) {
       onThemeChange((newTheme) => {
         setTheme(newTheme);
-        // Применяем тему к body для CSS переменных
-        document.body.setAttribute('data-theme', newTheme);
       });
-      // Устанавливаем начальную тему
-      document.body.setAttribute('data-theme', theme);
     }
+  }, []);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    // Применяем тему к body для CSS переменных
+    document.body.setAttribute('data-theme', theme);
   }, [theme]);
 
   const totalOwed = Array.isArray(debts)
@@ -129,4 +131,3 @@ function App() {
 }
 
 export default App;
-

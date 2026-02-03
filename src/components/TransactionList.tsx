@@ -58,4 +58,3 @@ export const TransactionList = ({ transactions, type, onDelete }: TransactionLis
     </div>
   );
 };
-

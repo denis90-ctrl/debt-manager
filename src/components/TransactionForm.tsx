@@ -67,4 +67,3 @@ export const TransactionForm = ({ type, onAdd }: TransactionFormProps) => {
     </form>
   );
 };
-

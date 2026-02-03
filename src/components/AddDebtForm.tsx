@@ -92,4 +92,3 @@ export const AddDebtForm = ({ onAdd }: AddDebtFormProps) => {
     </form>
   );
 };
-
