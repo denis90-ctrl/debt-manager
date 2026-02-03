@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Debt } from '../types/debt';
 import { TrendingUp, Zap, DollarSign } from 'lucide-react';
 
@@ -18,30 +19,37 @@ export const ProgressPanel = ({ debts }: ProgressPanelProps) => {
     );
   }
   
-  const activeDebts = debts.filter(d => d && !d.closedAt);
-  const totalActiveAmount = activeDebts.reduce((sum, d) => {
-    if (!d) return sum;
-    return sum + (Number(d.amount) || 0);
-  }, 0);
-  
-  const totalActiveInitial = activeDebts.reduce((sum, d) => {
-    if (!d) return sum;
-    const initial = d.initialAmount !== undefined && d.initialAmount !== null ? d.initialAmount : d.amount;
-    return sum + (Number(initial) || 0);
-  }, 0);
-  
-  const totalPaidAmount = Math.max(0, totalActiveInitial - totalActiveAmount);
-  const progress = totalActiveInitial > 0 ? Math.min(100, Math.max(0, (totalPaidAmount / totalActiveInitial) * 100)) : 0;
+  const { totalActiveAmount, totalActiveInitial, progress, totalPaidAmount } = useMemo(() => {
+    const activeDebts = debts.filter(d => d && !d.closedAt);
+    const activeAmount = activeDebts.reduce((sum, d) => {
+      if (!d) return sum;
+      return sum + (Number(d.amount) || 0);
+    }, 0);
+    const activeInitial = activeDebts.reduce((sum, d) => {
+      if (!d) return sum;
+      const initial = d.initialAmount !== undefined && d.initialAmount !== null ? d.initialAmount : d.amount;
+      return sum + (Number(initial) || 0);
+    }, 0);
+    const paid = Math.max(0, activeInitial - activeAmount);
+    const percent = activeInitial > 0 ? Math.min(100, Math.max(0, (paid / activeInitial) * 100)) : 0;
+    return {
+      totalActiveAmount: activeAmount,
+      totalActiveInitial: activeInitial,
+      totalPaidAmount: paid,
+      progress: percent,
+    };
+  }, [debts]);
   const radius = 140;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (progress / 100) * circumference;
 
-  const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat('ru-RU', {
+  const formatAmount = useMemo(() => {
+    const formatter = new Intl.NumberFormat('ru-RU', {
       style: 'currency',
       currency: 'RUB',
-    }).format(amount);
-  };
+    });
+    return (amount: number) => formatter.format(amount);
+  }, []);
 
   const getMotivationalMessage = () => {
     if (progress === 0) return { emoji: '💪', text: 'Начни свой путь!' };

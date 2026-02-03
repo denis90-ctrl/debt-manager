@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getDebts as storageGetDebts } from '../utils/storage';
 import { usePerformanceTimer } from '../components/PerformanceMonitor';
 import { Debt } from '../types/debt';
@@ -10,8 +10,8 @@ export const useDebts = () => {
   const [lastFetch, setLastFetch] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const cache = useMemo(() => new Map<string, Debt>(), []);
   const { startTimer, endTimer } = usePerformanceTimer('loadDebts');
+  const searchDebounceRef = useRef<number | null>(null);
 
   const filtered = useMemo(() => {
     if (!searchQuery.trim()) return debts;
@@ -35,7 +35,6 @@ export const useDebts = () => {
       setError(null);
 
       const data = storageGetDebts();
-      data.forEach((d: Debt) => cache.set(d.id, d));
       setDebts(data);
       setLastFetch(now);
       endTimer();
@@ -46,7 +45,7 @@ export const useDebts = () => {
     } finally {
       setLoading(false);
     }
-  }, [cache, debts.length, endTimer, lastFetch, startTimer]);
+  }, [debts.length, endTimer, lastFetch, startTimer]);
 
   const updateDebtLocal = useCallback((id: string, updates: Partial<Debt>) => {
     setDebts(prev => prev.map(d => d.id === id ? { ...d, ...updates } : d));
@@ -55,12 +54,22 @@ export const useDebts = () => {
   useEffect(() => {
     loadDebts();
     const interval = setInterval(() => loadDebts(), 30000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      if (searchDebounceRef.current) {
+        window.clearTimeout(searchDebounceRef.current);
+      }
+    };
   }, [loadDebts]);
 
   const debouncedSetSearch = useCallback((q: string) => {
-    const t = setTimeout(() => setSearchQuery(q), 300);
-    return () => clearTimeout(t);
+    if (searchDebounceRef.current) {
+      window.clearTimeout(searchDebounceRef.current);
+    }
+    searchDebounceRef.current = window.setTimeout(() => {
+      setSearchQuery(q);
+      searchDebounceRef.current = null;
+    }, 300);
   }, []);
 
   return {

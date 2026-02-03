@@ -3,9 +3,13 @@ import { Transaction } from '../types/transaction';
 const EXPENSES_KEY = 'expenses';
 const INCOME_KEY = 'income';
 
+const hasStorage = () => {
+  return typeof window !== 'undefined' && !!window.localStorage;
+};
+
 export const getExpenses = (): Transaction[] => {
   try {
-    if (typeof window === 'undefined' || !window.localStorage) {
+    if (!hasStorage()) {
       console.warn('localStorage is not available');
       return [];
     }
@@ -19,7 +23,7 @@ export const getExpenses = (): Transaction[] => {
 
 export const getIncome = (): Transaction[] => {
   try {
-    if (typeof window === 'undefined' || !window.localStorage) {
+    if (!hasStorage()) {
       console.warn('localStorage is not available');
       return [];
     }
@@ -32,6 +36,9 @@ export const getIncome = (): Transaction[] => {
 };
 
 export const addExpense = (expense: Omit<Transaction, 'id' | 'createdAt'>): Transaction => {
+  if (!hasStorage()) {
+    throw new Error('localStorage is not available');
+  }
   const expenses = getExpenses();
   const newExpense: Transaction = {
     ...expense,
@@ -44,6 +51,9 @@ export const addExpense = (expense: Omit<Transaction, 'id' | 'createdAt'>): Tran
 };
 
 export const addIncome = (income: Omit<Transaction, 'id' | 'createdAt'>): Transaction => {
+  if (!hasStorage()) {
+    throw new Error('localStorage is not available');
+  }
   const incomeList = getIncome();
   const newIncome: Transaction = {
     ...income,
@@ -56,22 +66,25 @@ export const addIncome = (income: Omit<Transaction, 'id' | 'createdAt'>): Transa
 };
 
 export const deleteExpense = (id: string): void => {
+  if (!hasStorage()) return;
   const expenses = getExpenses();
   const filtered = expenses.filter(e => e.id !== id);
   localStorage.setItem(EXPENSES_KEY, JSON.stringify(filtered));
 };
 
 export const deleteIncome = (id: string): void => {
+  if (!hasStorage()) return;
   const incomeList = getIncome();
   const filtered = incomeList.filter(i => i.id !== id);
   localStorage.setItem(INCOME_KEY, JSON.stringify(filtered));
 };
 
 export const clearAllExpenses = (): void => {
+  if (!hasStorage()) return;
   localStorage.removeItem(EXPENSES_KEY);
 };
 
 export const clearAllIncome = (): void => {
+  if (!hasStorage()) return;
   localStorage.removeItem(INCOME_KEY);
 };
-

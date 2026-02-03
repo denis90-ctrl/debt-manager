@@ -5,6 +5,7 @@ export const PerformanceMonitor: React.FC<{ children?: React.ReactNode }> = ({ c
   const lastRenderTime = useRef<number>(performance.now());
 
   useEffect(() => {
+    if (!import.meta.env.DEV) return;
     renderCount.current++;
     const currentTime = performance.now();
     const renderTime = currentTime - lastRenderTime.current;
@@ -22,10 +23,12 @@ export const usePerformanceTimer = (name: string) => {
   const startTime = useRef<number | null>(null);
 
   const startTimer = () => {
+    if (!import.meta.env.DEV) return;
     startTime.current = performance.now();
   };
 
   const endTimer = () => {
+    if (!import.meta.env.DEV) return 0;
     if (startTime.current) {
       const duration = performance.now() - startTime.current;
       console.debug(`${name}: ${duration.toFixed(2)}ms`);

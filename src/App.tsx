@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import PerformanceMonitor from './components/PerformanceMonitor';
 import { getExpenses, getIncome } from './utils/transactions';
@@ -28,13 +28,15 @@ function App() {
       return;
     }
 
-    try {
-      // Preload counts for debugging if needed
-      const loadedExpenses = getExpenses();
-      const loadedIncome = getIncome();
-      console.log('Loaded data counts:', { expenses: loadedExpenses.length, income: loadedIncome.length });
-    } catch (error) {
-      console.error('Error loading data:', error);
+    if (import.meta.env.DEV) {
+      try {
+        // Preload counts for debugging if needed
+        const loadedExpenses = getExpenses();
+        const loadedIncome = getIncome();
+        console.log('Loaded data counts:', { expenses: loadedExpenses.length, income: loadedIncome.length });
+      } catch (error) {
+        console.error('Error loading data:', error);
+      }
     }
 
     // Подписка на изменение темы Telegram (только один раз)
@@ -51,13 +53,23 @@ function App() {
     document.body.setAttribute('data-theme', theme);
   }, [theme]);
 
-  const totalOwed = Array.isArray(debts)
-    ? debts.filter(d => d && !d.closedAt && d.isOwed).reduce((sum, d) => sum + (Number(d.amount) || 0), 0)
-    : 0;
-  
-  const totalOwedToMe = Array.isArray(debts)
-    ? debts.filter(d => d && !d.closedAt && !d.isOwed).reduce((sum, d) => sum + (Number(d.amount) || 0), 0)
-    : 0;
+  const { totalOwed, totalOwedToMe } = useMemo(() => {
+    if (!Array.isArray(debts)) {
+      return { totalOwed: 0, totalOwedToMe: 0 };
+    }
+    const active = debts.filter(d => d && !d.closedAt);
+    const owed = active
+      .filter(d => d.isOwed)
+      .reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
+    const owedToMe = active
+      .filter(d => !d.isOwed)
+      .reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
+    return { totalOwed: owed, totalOwedToMe: owedToMe };
+  }, [debts]);
+
+  const currencyFormatter = useMemo(() => {
+    return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' });
+  }, []);
 
 
   
@@ -96,13 +108,13 @@ function App() {
         </div>
         <div className="summary">
           <div className="summary-item owed">
-            Я должен: {new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(totalOwed)}
+            Я должен: {currencyFormatter.format(totalOwed)}
           </div>
           <div className="summary-item owed-to-me">
-            Мне должны: {new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(totalOwedToMe)}
+            Мне должны: {currencyFormatter.format(totalOwedToMe)}
           </div>
           <div className="summary-item balance">
-            Баланс: {new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(totalOwedToMe - totalOwed)}
+            Баланс: {currencyFormatter.format(totalOwedToMe - totalOwed)}
           </div>
         </div>
       </header>
