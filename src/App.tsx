@@ -65,7 +65,7 @@ function App() {
   return (
     <ErrorBoundary>
       <PerformanceMonitor>
-      <BrowserRouter>
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
       <div className={`app ${theme === 'dark' ? 'theme-dark' : 'theme-light'}`}>
         <header className="app-header">
         <div className="header-top">
