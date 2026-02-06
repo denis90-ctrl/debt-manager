@@ -80,41 +80,38 @@ function App() {
       <BrowserRouter basename={import.meta.env.BASE_URL}>
       <div className={`app ${theme === 'dark' ? 'theme-dark' : 'theme-light'}`}>
         <header className="app-header">
-        <div className="header-top">
-          <h1>Finance Departament</h1>
-          <div className="header-buttons">
-            <button
-              onClick={async () => {
-                const confirmed = await showConfirm('Вы уверены? Это действие нельзя отменить.');
-                if (!confirmed) return;
-                try {
-                  const { clearAllDebts } = await import('./utils/storage');
-                  const { clearAllExpenses, clearAllIncome } = await import('./utils/transactions');
-                  clearAllDebts();
-                  clearAllExpenses();
-                  clearAllIncome();
-                  await loadDebts(true);
-                } catch (e) {
-                  console.error(e);
-                  showAlert('Не удалось очистить данные.');
-                }
-              }}
-              className="btn-clear"
-              type="button"
-            >
-              Очистить историю
-            </button>
-          </div>
+        <div className="header-title-pill">
+          <h1>Finance department</h1>
         </div>
+        <button
+          onClick={async () => {
+            const confirmed = await showConfirm('Вы уверены? Это действие нельзя отменить.');
+            if (!confirmed) return;
+            try {
+              const { clearAllDebts } = await import('./utils/storage');
+              const { clearAllExpenses, clearAllIncome } = await import('./utils/transactions');
+              clearAllDebts();
+              clearAllExpenses();
+              clearAllIncome();
+              await loadDebts(true);
+            } catch (e) {
+              console.error(e);
+              showAlert('Не удалось очистить данные.');
+            }
+          }}
+          className="btn-clear"
+          type="button"
+        >
+          Очистить историю
+        </button>
         <div className="summary">
-          <div className="summary-item owed">
-            Я должен: {currencyFormatter.format(totalOwed)}
+          <div className="summary-item">
+            <span className="summary-label">Debit</span>
+            <span className="summary-value">{currencyFormatter.format(totalOwed)}</span>
           </div>
-          <div className="summary-item owed-to-me">
-            Мне должны: {currencyFormatter.format(totalOwedToMe)}
-          </div>
-          <div className="summary-item balance">
-            Баланс: {currencyFormatter.format(totalOwedToMe - totalOwed)}
+          <div className="summary-item">
+            <span className="summary-label">Credit</span>
+            <span className="summary-value">{currencyFormatter.format(totalOwedToMe)}</span>
           </div>
         </div>
       </header>
