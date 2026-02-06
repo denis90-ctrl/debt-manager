@@ -7,7 +7,8 @@ import useDebts from './hooks/useDebts';
 import {
   BrowserRouter,
   Routes,
-  Route
+  Route,
+  Navigate
 } from 'react-router-dom';
 import Home from './pages/Home';
 import DebtsPage from './pages/DebtsPage';
@@ -110,6 +111,7 @@ function App() {
             <Route path="/debts" element={<DebtsPage />} />
             <Route path="/expenses" element={<ExpensesPage />} />
             <Route path="/income" element={<IncomePage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
 
