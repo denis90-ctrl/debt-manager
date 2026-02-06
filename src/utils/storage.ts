@@ -1,6 +1,13 @@
 import { Debt } from '../types/debt';
 
 const STORAGE_KEY = 'debts';
+const STORAGE_EVENT = 'debts:changed';
+
+const emitChange = () => {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(STORAGE_EVENT));
+  }
+};
 
 export const getDebts = (): Debt[] => {
   try {
@@ -46,6 +53,7 @@ export const saveDebts = (debts: Debt[]): void => {
       return;
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(debts));
+    emitChange();
   } catch (error) {
     console.error('Error saving debts:', error);
   }
@@ -99,6 +107,7 @@ export const addDebt = (debt: Omit<Debt, 'id' | 'createdAt' | 'initialAmount'>):
     
     updatedDebts.push(newDebt);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedDebts));
+    emitChange();
     return newDebt;
   } catch (error) {
     console.error('Error adding debt:', error);
@@ -190,6 +199,7 @@ export const reorderDebts = (debts: Debt[]): void => {
 
 export const clearAllDebts = (): void => {
   localStorage.removeItem(STORAGE_KEY);
+  emitChange();
 };
 
 export const clearClosedDebtsAndResetProgress = (): void => {
@@ -207,6 +217,7 @@ export const clearClosedDebtsAndResetProgress = (): void => {
     }));
     // Используем прямую запись, чтобы избежать рекурсии
     localStorage.setItem(STORAGE_KEY, JSON.stringify(resetDebts));
+    emitChange();
   } catch (error) {
     console.error('Error clearing closed debts:', error);
   }

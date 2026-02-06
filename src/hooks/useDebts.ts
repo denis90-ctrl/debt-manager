@@ -54,6 +54,14 @@ export const useDebts = () => {
     };
   }, [loadDebts]);
 
+  useEffect(() => {
+    const onChange = () => loadDebts(true);
+    window.addEventListener('debts:changed', onChange);
+    return () => {
+      window.removeEventListener('debts:changed', onChange);
+    };
+  }, [loadDebts]);
+
   const debouncedSetSearch = useCallback((q: string) => {
     if (searchDebounceRef.current) {
       window.clearTimeout(searchDebounceRef.current);
