@@ -1,5 +1,4 @@
-import { useState, useCallback } from 'react';
-import { FixedSizeList as List } from 'react-window';
+import { useState } from 'react';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Debt } from '../types/debt';
@@ -123,15 +122,6 @@ export const DebtList = ({ debts, onReduce, onIncrease, onClose }: DebtListProps
   const activeDebts = debts.filter(d => d && !d.closedAt);
   const closedDebts = debts.filter(d => d && d.closedAt);
 
-  const Row = useCallback(({ index, style, data }: any) => {
-    const item: Debt = data[index];
-    return (
-      <div style={style} className="px-2 py-1">
-        <DebtItem debt={item} onReduce={onReduce} onIncrease={onIncrease} onClose={onClose} />
-      </div>
-    );
-  }, [onReduce, onIncrease, onClose]);
-
   return (
     <div className="debt-list">
       <h2>Активные долги ({activeDebts.length})</h2>
@@ -139,16 +129,11 @@ export const DebtList = ({ debts, onReduce, onIncrease, onClose }: DebtListProps
         <p className="empty">Нет активных долгов</p>
       ) : (
         <div className="debts-container">
-          <List
-            height={Math.min(600, activeDebts.length * 120)}
-            itemCount={activeDebts.length}
-            itemSize={120}
-            width="100%"
-            itemData={activeDebts}
-            overscanCount={3}
-          >
-            {Row}
-          </List>
+          {activeDebts.map((item) => (
+            <div key={item.id} className="px-2 py-1">
+              <DebtItem debt={item} onReduce={onReduce} onIncrease={onIncrease} onClose={onClose} />
+            </div>
+          ))}
         </div>
       )}
 
@@ -156,16 +141,11 @@ export const DebtList = ({ debts, onReduce, onIncrease, onClose }: DebtListProps
         <>
           <h2>Закрытые долги ({closedDebts.length})</h2>
           <div className="debts-container">
-            <List
-              height={Math.min(400, closedDebts.length * 120)}
-              itemCount={closedDebts.length}
-              itemSize={120}
-              width="100%"
-              itemData={closedDebts}
-              overscanCount={2}
-            >
-              {Row}
-            </List>
+            {closedDebts.map((item) => (
+              <div key={item.id} className="px-2 py-1">
+                <DebtItem debt={item} onReduce={onReduce} onIncrease={onIncrease} onClose={onClose} />
+              </div>
+            ))}
           </div>
         </>
       )}
