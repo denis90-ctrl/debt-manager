@@ -19,6 +19,14 @@
   }
 } 
 
+body::before {
+  content: "";
+  position: fixed;
+  inset: -100vh 0;
+  background: #4a74c9;
+  z-index: -1;
+}
+
 #root {
   background: #4a74c9;
   min-height: 100vh;
