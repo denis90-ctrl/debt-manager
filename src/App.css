@@ -5,6 +5,7 @@
 @layer base {
   html {
     @apply scroll-smooth;
+    background: #4a74c9;
   }
   
   body {
@@ -14,8 +15,14 @@
     width: 100%;
     overflow-x: hidden;
     box-sizing: border-box;
+    overscroll-behavior: none;
   }
 } 
+
+#root {
+  background: #4a74c9;
+  min-height: 100vh;
+}
 
 @layer components {
   .btn {
