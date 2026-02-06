@@ -18,7 +18,7 @@ const Home: React.FC = () => {
     <div className="home-page">
       <div className="home-content">
         <ProgressPanel debts={debts} />
-        <div className="home-actions mt-6 grid grid-cols-3 gap-4">
+        <div className="home-actions">
           <IconButton to="/debts" icon={<Wallet size={28} />} label="Debts" />
           <IconButton to="/expenses" icon={<TrendingDown size={28} />} label="Expenses" />
           <IconButton to="/income" icon={<TrendingUp size={28} />} label="Income" />

@@ -69,7 +69,7 @@ export const ProgressPanel = ({ debts }: ProgressPanelProps) => {
         Твой прогресс
       </h2>
       
-      <div className="relative w-80 h-80 mx-auto mb-8">
+      <div className="progress-ring relative mx-auto mb-8">
         <svg className="progress-circle w-full h-full transform -rotate-90" viewBox="0 0 320 320">
           <defs>
             <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -103,7 +103,7 @@ export const ProgressPanel = ({ debts }: ProgressPanelProps) => {
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="progress-stats space-y-3">
         <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border-l-4 border-blue-500">
           <div className="flex items-center gap-2">
             <DollarSign className="w-5 h-5 text-blue-600" />
