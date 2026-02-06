@@ -37,7 +37,12 @@ export const getIncome = (): Transaction[] => {
 
 export const addExpense = (expense: Omit<Transaction, 'id' | 'createdAt'>): Transaction => {
   if (!hasStorage()) {
-    throw new Error('localStorage is not available');
+    console.warn('localStorage is not available');
+    return {
+      ...expense,
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+    };
   }
   const expenses = getExpenses();
   const newExpense: Transaction = {
@@ -52,7 +57,12 @@ export const addExpense = (expense: Omit<Transaction, 'id' | 'createdAt'>): Tran
 
 export const addIncome = (income: Omit<Transaction, 'id' | 'createdAt'>): Transaction => {
   if (!hasStorage()) {
-    throw new Error('localStorage is not available');
+    console.warn('localStorage is not available');
+    return {
+      ...income,
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+    };
   }
   const incomeList = getIncome();
   const newIncome: Transaction = {

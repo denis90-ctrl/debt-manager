@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getDebts as storageGetDebts } from '../utils/storage';
-import { usePerformanceTimer } from '../components/PerformanceMonitor';
 import { Debt } from '../types/debt';
 
 export const useDebts = () => {
@@ -10,7 +9,6 @@ export const useDebts = () => {
   const [lastFetch, setLastFetch] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { startTimer, endTimer } = usePerformanceTimer('loadDebts');
   const searchDebounceRef = useRef<number | null>(null);
 
   const filtered = useMemo(() => {
@@ -23,11 +21,9 @@ export const useDebts = () => {
 
   const loadDebts = useCallback(async (force = false) => {
     try {
-      startTimer();
       const now = Date.now();
       const cacheAge = 5 * 60 * 1000; // 5 мин
       if (!force && now - lastFetch < cacheAge && debts.length > 0) {
-        endTimer();
         return;
       }
 
@@ -37,15 +33,13 @@ export const useDebts = () => {
       const data = storageGetDebts();
       setDebts(data);
       setLastFetch(now);
-      endTimer();
     } catch (e) {
       console.error('Ошибка загрузки долгов:', e);
       setError('Ошибка загрузки долгов');
-      endTimer();
     } finally {
       setLoading(false);
     }
-  }, [debts.length, endTimer, lastFetch, startTimer]);
+  }, [debts.length, lastFetch]);
 
   const updateDebtLocal = useCallback((id: string, updates: Partial<Debt>) => {
     setDebts(prev => prev.map(d => d.id === id ? { ...d, ...updates } : d));
@@ -53,9 +47,7 @@ export const useDebts = () => {
 
   useEffect(() => {
     loadDebts();
-    const interval = setInterval(() => loadDebts(), 30000);
     return () => {
-      clearInterval(interval);
       if (searchDebounceRef.current) {
         window.clearTimeout(searchDebounceRef.current);
       }

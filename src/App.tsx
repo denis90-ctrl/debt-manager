@@ -1,7 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import PerformanceMonitor from './components/PerformanceMonitor';
-import { getExpenses, getIncome } from './utils/transactions';
 import { getTheme, onThemeChange, showAlert, showConfirm, isTelegramWebApp } from './utils/telegram';
 
 import './App.css';
@@ -26,17 +24,6 @@ function App() {
     if (typeof window === 'undefined' || !window.localStorage) {
       console.warn('localStorage is not available');
       return;
-    }
-
-    if (import.meta.env.DEV) {
-      try {
-        // Preload counts for debugging if needed
-        const loadedExpenses = getExpenses();
-        const loadedIncome = getIncome();
-        console.log('Loaded data counts:', { expenses: loadedExpenses.length, income: loadedIncome.length });
-      } catch (error) {
-        console.error('Error loading data:', error);
-      }
     }
 
     // Подписка на изменение темы Telegram (только один раз)
@@ -76,7 +63,6 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <PerformanceMonitor>
       <BrowserRouter basename={import.meta.env.BASE_URL}>
       <div className={`app ${theme === 'dark' ? 'theme-dark' : 'theme-light'}`}>
         <header className="app-header">
@@ -134,7 +120,6 @@ function App() {
       </main>
       </div>
       </BrowserRouter>
-      </PerformanceMonitor>
     </ErrorBoundary>
   );
 }
